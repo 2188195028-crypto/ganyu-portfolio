@@ -331,6 +331,7 @@
 
     /* 经历时间线(细线行) */
     .tl { margin-top: clamp(40px, 6vh, 64px); }
+    .tl + .tl { margin-top: clamp(44px, 6.5vh, 72px); }
     .tl-head {
       font-size: 11px;
       letter-spacing: .28em;
@@ -340,14 +341,16 @@
       margin-bottom: 0;
     }
     .tl-item {
-      display: flex;
+      display: grid;
+      grid-template-columns: clamp(80px, 9vw, 128px) 1fr;
       gap: clamp(16px, 3vw, 48px);
+      align-items: baseline;
       padding: clamp(16px, 2.4vh, 24px) 0;
       border-bottom: 1px solid var(--ink);
     }
     .tl-time {
       flex: none;
-      width: clamp(96px, 11vw, 150px);
+      width: clamp(80px, 9vw, 128px);
       font-family: var(--font-body);
       font-size: 12px;
       letter-spacing: .08em;
@@ -380,6 +383,19 @@
       padding: clamp(14px, 2vh, 20px) 0;
       border-bottom: 1px solid var(--ink);
     }
+    .skill-list.skill-compact li { padding: clamp(10px, 1.4vh, 14px) 0; }
+
+    /* 一行式经历(选择器提权: 防 .sec p 覆盖字号) */
+    .tl-item.tl-compact { padding: clamp(10px, 1.4vh, 14px) 0; }
+    .tl-item.tl-compact:first-child { border-top: 1px solid var(--ink); }
+    .tl .tl-line {
+      max-width: none; /* 覆盖 .sec p 的 60ch 行宽限制 */
+      font-family: var(--font-cn);
+      font-size: clamp(13px, 1.05vw, 15px);
+      line-height: 1.7;
+    }
+    .tl .tl-line strong { font-weight: 700; }
+    .tl-sep { margin: 0 10px; color: var(--muted); }
     .skill-cat {
       flex: none;
       width: clamp(72px, 7vw, 100px);
@@ -463,7 +479,7 @@
       .contact-list li { flex-direction: column; gap: 6px; }
       /* 基本信息 2 列, 时间线上移 */
       .fact-grid { grid-template-columns: repeat(2, 1fr); }
-      .tl-item { flex-direction: column; gap: 6px; }
+      .tl-item { grid-template-columns: 1fr; gap: 6px; }
       .skill-list li { flex-direction: column; gap: 6px; }
     }
     @media (max-width: 480px) {
@@ -536,47 +552,27 @@
         <div><dt>求职方向</dt><dd>视觉传达设计师 / 三维设计师</dd></div>
       </dl>
 
-      <!-- 经历时间线 -->
+      <!-- 经历(精选两条, 一行式) -->
       <div class="tl">
         <h3 class="tl-head">经历 · EXPERIENCE</h3>
-        <div class="tl-item">
-          <span class="tl-time">2026.07 — 2026.08</span>
-          <div class="tl-body">
-            <p class="tl-name">陕西理工大学文创公司 · 视觉设计实习生</p>
-            <p class="tl-desc">全职实习两个月，深度参与文创产品从设计提案到成品落地的完整商业流程，协助完成效果图绘制、包装设计与宣传物料输出，参与打样跟进与品控反馈。</p>
-          </div>
+        <div class="tl-item tl-compact">
+          <span class="tl-time">2026.07 — 08</span>
+          <p class="tl-line"><strong>陕西理工大学文创公司 · 视觉设计实习生</strong><span class="tl-sep">—</span>文创产品从提案到落地的全流程参与</p>
         </div>
-        <div class="tl-item">
-          <span class="tl-time">2026.06 — 2026.07</span>
-          <div class="tl-body">
-            <p class="tl-name">汉中福地茶业 · 企业文旅墙绘与展示图案设计</p>
-            <p class="tl-desc">完成厂区文化墙绘方案与展示图案系统，融合茶文化符号与企业品牌基因，全流程交付获甲方「超出预期」书面评价。</p>
-          </div>
-        </div>
-        <div class="tl-item">
-          <span class="tl-time">2026.06 — 2026.07</span>
-          <div class="tl-body">
-            <p class="tl-name">中国铁塔汉中分公司 · 品牌文创纪念品全流程设计</p>
-            <p class="tl-desc">提出「连接」设计概念，完成概念草图到打样跟进的完整链路，方案获甲方评审委员会全票通过，首批 200 套已投入使用。</p>
-          </div>
-        </div>
-        <div class="tl-item">
-          <span class="tl-time">2026.03 — 2026.06</span>
-          <div class="tl-body">
-            <p class="tl-name">文创电商平台 · 品牌视觉设计与前端实现</p>
-            <p class="tl-desc">以 Apple 极简主义为视觉基调构建 Design Tokens 配色体系与三端响应式布局，双版本已部署上线，独立完成快闪店视觉系统设计。</p>
-          </div>
+        <div class="tl-item tl-compact">
+          <span class="tl-time">2026.06 — 07</span>
+          <p class="tl-line"><strong>中国铁塔汉中分公司 · 品牌文创纪念品</strong><span class="tl-sep">—</span>方案全票通过，200 套已投入使用</p>
         </div>
       </div>
 
-      <!-- 技能 -->
+      <!-- 技能(紧凑) -->
       <div class="tl">
         <h3 class="tl-head">技能 · SKILLS</h3>
-        <ul class="skill-list">
-          <li><span class="skill-cat">视觉设计</span><span class="skill-val">Figma / 品牌视觉系统 / 配色体系 / 响应式排版 / UI 原型开发</span></li>
-          <li><span class="skill-cat">三维设计</span><span class="skill-val">Blender 全流程（建模 / 材质 / 动画 / 粒子 / Python）/ Three.js WebGL</span></li>
-          <li><span class="skill-cat">设计提效</span><span class="skill-val">AI 创意辅助（文生图 / 视频 / 代码）/ 设计工作流优化</span></li>
-          <li><span class="skill-cat">协作表达</span><span class="skill-val">设计决策文档 / 全流程独立交付（概念 → 设计 → 开发 → 部署）</span></li>
+        <ul class="skill-list skill-compact">
+          <li><span class="skill-cat">视觉设计</span><span class="skill-val">Figma / 品牌视觉系统 / 响应式排版 / UI 原型开发</span></li>
+          <li><span class="skill-cat">三维设计</span><span class="skill-val">Blender 全流程 / Three.js WebGL</span></li>
+          <li><span class="skill-cat">设计提效</span><span class="skill-val">AI 创意辅助 / 设计工作流优化</span></li>
+          <li><span class="skill-cat">协作表达</span><span class="skill-val">设计决策文档 / 全流程独立交付</span></li>
         </ul>
       </div>
     </section>
