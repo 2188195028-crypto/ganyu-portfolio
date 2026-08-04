@@ -2,7 +2,7 @@
 import { chromium } from 'playwright-core';
 const browser = await chromium.launch({ channel: 'msedge', headless: true, args: ['--disable-gpu', '--no-sandbox'] });
 const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
-await page.goto('file:///E:/ClaudeProjects/ganyu-portfolio/index.html', { waitUntil: 'load' });
+await page.goto('file:///E:/ClaudeProjects/作品集/index.html', { waitUntil: 'load' });
 await page.waitForTimeout(1200);
 const r = await page.evaluate(() => {
   const base = document.querySelector('.layer-base .hero-title');

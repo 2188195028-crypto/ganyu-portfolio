@@ -13,7 +13,7 @@ function getVal(key, fallback) {
 const out = getVal('--out', demo ? '../shots/demo.png' : '../shots/normal.png');
 const width = Number(getVal('--w', 1600));
 const height = Number(getVal('--h', 1000));
-const url = 'file:///E:/ClaudeProjects/ganyu-portfolio/index.html' + (demo ? '?demo=1' : '');
+const url = 'file:///E:/ClaudeProjects/作品集/index.html' + (demo ? '?demo=1' : '');
 
 const browser = await chromium.launch({
   channel: 'msedge',

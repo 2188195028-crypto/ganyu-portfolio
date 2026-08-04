@@ -4,7 +4,7 @@ import { chromium } from 'playwright-core';
 import { readFileSync, writeFileSync } from 'fs';
 
 const args = process.argv.slice(2);
-const inPath = args[0] || 'E:/ClaudeProjects/ganyu-portfolio/assets/medallion.png';
+const inPath = args[0] || 'E:/ClaudeProjects/作品集/assets/medallion.png';
 const outName = args[1] || 'medallion';
 const browser = await chromium.launch({ channel: 'msedge', headless: true, args: ['--disable-gpu', '--no-sandbox'] });
 const page = await browser.newPage();
@@ -30,10 +30,10 @@ const jpegSize = Math.round(result.jpeg.length * 3 / 4);
 console.log('webp:', webpSize, 'B  jpeg:', jpegSize, 'B');
 
 if (webpSize <= jpegSize) {
-  writeFileSync('E:/ClaudeProjects/ganyu-portfolio/assets/medallion.new.webp', Buffer.from(result.webp, 'base64'));
+  writeFileSync('E:/ClaudeProjects/作品集/assets/medallion.new.webp', Buffer.from(result.webp, 'base64'));
   console.log('选用 webp (medallion.new.webp)');
 } else {
-  writeFileSync('E:/ClaudeProjects/ganyu-portfolio/assets/medallion.new.jpg', Buffer.from(result.jpeg, 'base64'));
+  writeFileSync('E:/ClaudeProjects/作品集/assets/medallion.new.jpg', Buffer.from(result.jpeg, 'base64'));
   console.log('选用 jpeg (medallion.new.jpg)');
 }
 await browser.close();
