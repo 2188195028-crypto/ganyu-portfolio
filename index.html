@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GANYU · 甘宇 — 3D 视觉 / 数字媒体作品集</title>
+  <meta name="description" content="甘宇 GANYU — 3D 视觉与数字媒体创作者。Blender 建模 · 交互视觉 · Web 3D。" />
+  <!-- 主题:MiMo 风格黑白瑞士排版 · 暖白 #FAF9F6 / 纯黑 #0A0A0A · 甘宇 GANYU · 2026-08-04 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ============ 设计令牌 ============ */
+    :root {
+      --bg: #faf9f6;            /* 暖白背景(纸张感) */
+      --ink: #0a0a0a;           /* 纯黑主文字 */
+      --muted: #8a8a86;         /* 次要灰 */
+      --font-display: "Archivo Black", "Noto Sans SC", sans-serif;
+      --font-body: "Space Grotesk", "Noto Sans SC", sans-serif;
+      --font-cn: "Noto Sans SC", sans-serif;
+      --r: clamp(70px, min(16vh, 20vw), 150px); /* 黑圆蒙版半径(小圆, 不遮挡居中标题) */
+      --cx: 36%;                /* 蒙版初始位置(JS 接管前) */
+      --cy: 44%;
+    }
+
+    /* ============ 基础 ============ */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { color: inherit; }
+    :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+    /* ============ 顶栏 ============ */
+    .site-header {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(20px, 3vw, 48px);
+      border-bottom: 1px solid var(--ink);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 20;
+    }
+    .logo {
+      font-family: var(--font-display);
+      font-size: 17px;
+      letter-spacing: .32em;
+      text-decoration: none;
+    }
+    .nav { display: flex; gap: clamp(20px, 3vw, 44px); }
+    .nav a {
+      position: relative;
+      padding: 8px 0;
+      font-size: 13px;
+      letter-spacing: .18em;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .nav a::after {
+      content: "";
+      position: absolute;
+      left: 0; bottom: 2px;
+      width: 100%; height: 1px;
+      background: var(--ink);
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform .3s ease;
+    }
+    .nav a:hover::after,
+    .nav a:focus-visible::after { transform: scaleX(1); transform-origin: left; }
+
+    /* ============ 首屏画布 ============ */
+    .hero {
+      position: relative;
+      height: calc(100vh - 60px);
+      min-height: 560px;
+      overflow: hidden;
+    }
+
+    /* 发丝级画布外框(工程图纸感) */
+    .hero-frame {
+      position: absolute;
+      inset: 14px;
+      border: 1px solid rgba(10, 10, 10, .85);
+      pointer-events: none;
+      z-index: 5;
+    }
+    /* 画布角落标注 */
+    .corner {
+      position: absolute;
+      font-size: 10px;
+      letter-spacing: .28em;
+      color: var(--muted);
+      z-index: 5;
+      pointer-events: none;
+    }
+    .corner-tl { top: 26px; left: 26px; }
+    .corner-br { bottom: 26px; right: 26px; }
+    .corner-inv { color: rgba(255, 255, 255, .6); }
+
+    /* 双层: 底层暖白黑字 / 反色层黑底白字(clip 出圆形蒙版) */
+    .layer { position: absolute; inset: 0; }
+    .layer-base { z-index: 1; }
+    .layer-invert {
+      z-index: 2;
+      background: var(--ink);
+      clip-path: circle(var(--r) at var(--cx) var(--cy));
+    }
+
+    /* 主标题(双层各一份: 基础层中文黑字, 反色层英文白字), 画面居中 */
+    .hero-copy {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .hero-title {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: clamp(36px, 6.8vw, 112px);
+      line-height: 1.05;
+      letter-spacing: -.01em;
+      margin: 0;
+      white-space: nowrap;
+    }
+    /* 浮雕字: 白底浮雕——主体保持纯黑, 左上白刃高光+右下深影刻画边缘 */
+    .layer-base .hero-title {
+      color: #0a0a0a;
+      text-shadow:
+        -0.035em -0.035em 0 rgba(255, 255, 255, 1),
+        -0.07em -0.07em 0.05em rgba(255, 255, 255, .55),
+        0.045em 0.045em 0 rgba(0, 0, 0, .45),
+        0.08em 0.08em 0.08em rgba(0, 0, 0, .14);
+    }
+    /* 浮雕字(反色层黑底白字) */
+    .layer-invert .hero-title {
+      color: #f5f5ec;
+      text-shadow:
+        -0.035em -0.035em 0 rgba(0, 0, 0, 1),
+        -0.07em -0.07em 0.06em rgba(0, 0, 0, .6),
+        0.05em 0.05em 0 rgba(255, 255, 255, .4),
+        0.09em 0.09em 0.1em rgba(0, 0, 0, .5);
+    }
+
+    /* 副行(标题下方居中) */
+    .hero-sub {
+      margin-top: clamp(14px, 1.6vw, 26px);
+      font-family: var(--font-cn);
+      font-size: clamp(12px, 1.05vw, 16px);
+      letter-spacing: .08em;
+      color: var(--muted);
+    }
+    .layer-invert .hero-sub { color: rgba(255, 255, 255, .92); }
+
+    /* 首屏 3D 舞台: 内容随鼠标小幅倾斜 + 持续轻微摇摆 */
+    .hero { perspective: 1200px; }
+    .layer {
+      transform: rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg)) rotateZ(var(--tz, 0deg));
+      will-change: transform;
+    }
+
+    /* 滚动提示 */
+    .hero-hint {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      letter-spacing: .34em;
+      text-transform: uppercase;
+      color: var(--muted);
+      z-index: 4;
+    }
+    .layer-invert .hero-hint { color: rgba(255, 255, 255, .65); }
+    .hint-arrow { display: inline-block; animation: hintDrop 2.2s ease-in-out infinite; }
+    @keyframes hintDrop {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(6px); }
+    }
+
+    /* ============ 作品卡片 ============ */
+    .work-card {
+      display: grid;
+      grid-template-columns: 5fr 4fr;
+      border: 1px solid var(--ink);
+      background: var(--bg);
+      margin-top: clamp(40px, 6vh, 64px);
+    }
+    /* 预览图: 直接展示真实彩色作品, 悬停轻微放大 */
+    .work-thumb {
+      position: relative;
+      display: block;
+      overflow: hidden;
+      border-right: 1px solid var(--ink);
+      aspect-ratio: 16 / 10;
+    }
+    .work-thumb img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .5s ease;
+    }
+    .work-thumb:hover img,
+    .work-thumb:focus-visible img {
+      transform: scale(1.02);
+    }
+    .work-view {
+      position: absolute;
+      left: 14px; bottom: 14px;
+      background: var(--ink);
+      color: var(--bg);
+      font-size: 11px;
+      letter-spacing: .2em;
+      padding: 9px 14px;
+      text-decoration: none;
+    }
+    .work-info {
+      padding: clamp(24px, 3vw, 40px);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .work-tag {
+      font-size: 11px;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .work-title {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: clamp(20px, 2.2vw, 34px);
+      line-height: 1.25;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .work-title a {
+      color: inherit;
+      text-decoration: none;
+      transition: color .3s ease;
+    }
+    .work-title a:hover { color: #55554a; }
+    .work-desc {
+      font-family: var(--font-cn);
+      font-size: clamp(13px, 1vw, 15px);
+      line-height: 1.9;
+      color: var(--muted);
+      flex: 1;
+    }
+    .work-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      border-top: 1px solid rgba(10, 10, 10, .25);
+      padding-top: 14px;
+      font-size: 11px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ============ 占位区(作品/关于) ============ */
+    .sec {
+      position: relative;
+      border-top: 1px solid var(--ink);
+      padding: clamp(80px, 12vh, 150px) clamp(24px, 6vw, 96px);
+      overflow: hidden;
+    }
+    .sec-kicker {
+      font-size: 11px;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+    .sec h2 {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: clamp(28px, 4.6vw, 60px);
+      line-height: 1.15;
+      color: var(--ink);
+    }
+    .sec p {
+      font-family: var(--font-cn);
+      max-width: 60ch;
+      margin-top: 22px;
+      font-size: clamp(14px, 1.15vw, 17px);
+      line-height: 1.9;
+      color: var(--muted);
+    }
+
+    /* ============ 关于区 ============ */
+    /* 基本信息 4 列网格(细线分隔) */
+    .fact-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      margin-top: clamp(36px, 5vh, 56px);
+      border-top: 1px solid var(--ink);
+      border-left: 1px solid var(--ink);
+    }
+    .fact-grid > div {
+      padding: clamp(16px, 2.2vh, 26px) clamp(14px, 1.6vw, 24px);
+      border-right: 1px solid var(--ink);
+      border-bottom: 1px solid var(--ink);
+    }
+    .fact-grid dt {
+      font-size: 11px;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .fact-grid dd {
+      font-family: var(--font-cn);
+      font-size: clamp(13px, 1.1vw, 16px);
+      line-height: 1.6;
+    }
+
+    /* 经历时间线(细线行) */
+    .tl { margin-top: clamp(40px, 6vh, 64px); }
+    .tl-head {
+      font-size: 11px;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 400;
+      margin-bottom: 0;
+    }
+    .tl-item {
+      display: flex;
+      gap: clamp(16px, 3vw, 48px);
+      padding: clamp(16px, 2.4vh, 24px) 0;
+      border-bottom: 1px solid var(--ink);
+    }
+    .tl-time {
+      flex: none;
+      width: clamp(96px, 11vw, 150px);
+      font-family: var(--font-body);
+      font-size: 12px;
+      letter-spacing: .08em;
+      color: var(--muted);
+      padding-top: 3px;
+    }
+    .tl-name {
+      font-family: var(--font-cn);
+      font-weight: 700;
+      font-size: clamp(14px, 1.2vw, 17px);
+      line-height: 1.6;
+    }
+    .tl-desc {
+      font-family: var(--font-cn);
+      font-size: clamp(12.5px, 1vw, 14.5px);
+      line-height: 1.8;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* 技能列表 */
+    .skill-list {
+      list-style: none;
+      margin-top: clamp(36px, 5vh, 56px);
+      border-top: 1px solid var(--ink);
+    }
+    .skill-list li {
+      display: flex;
+      gap: 24px;
+      padding: clamp(14px, 2vh, 20px) 0;
+      border-bottom: 1px solid var(--ink);
+    }
+    .skill-cat {
+      flex: none;
+      width: clamp(72px, 7vw, 100px);
+      font-size: 11px;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .skill-val {
+      font-family: var(--font-cn);
+      font-size: clamp(13px, 1.1vw, 16px);
+      line-height: 1.8;
+    }
+
+    /* ============ 联系区 ============ */
+    .sec-lead {
+      max-width: 56ch;
+      font-family: var(--font-cn);
+      font-size: clamp(14px, 1.15vw, 17px);
+      line-height: 1.9;
+      color: var(--muted);
+    }
+    .contact-list {
+      list-style: none;
+      margin-top: clamp(36px, 5vh, 56px);
+      border-top: 1px solid var(--ink);
+    }
+    .contact-list li {
+      display: flex;
+      align-items: baseline;
+      gap: 24px;
+      padding: clamp(14px, 2vh, 20px) 0;
+      border-bottom: 1px solid var(--ink);
+    }
+    .c-label {
+      flex: none;
+      width: clamp(72px, 7vw, 100px);
+      font-size: 11px;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .contact-list a,
+    .c-static {
+      font-family: var(--font-cn);
+      font-size: clamp(15px, 1.5vw, 21px);
+      color: var(--ink);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color .3s ease, color .3s ease;
+    }
+    .contact-list a:hover { border-color: var(--ink); }
+
+    /* ============ 页脚 ============ */
+    .site-footer {
+      border-top: 1px solid var(--ink);
+      padding: 40px clamp(24px, 6vw, 96px);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px 40px;
+      align-items: baseline;
+      justify-content: space-between;
+      font-size: 12px;
+      letter-spacing: .12em;
+      color: var(--muted);
+    }
+    .site-footer a:hover { color: var(--ink); }
+
+    /* ============ 响应式 ============ */
+    @media (max-width: 768px) {
+      .hero { min-height: 480px; }
+      .hero-frame { inset: 8px; }
+      .corner-tl { top: 18px; left: 18px; }
+      .corner-br { bottom: 18px; right: 18px; }
+      .hero-title { left: clamp(20px, 8vw, 60px); }
+      .hero-sub { left: clamp(24px, 8.6vw, 68px); }
+      /* 作品卡片: 单列, 图在上文在下 */
+      .work-card { grid-template-columns: 1fr; }
+      .work-thumb { border-right: none; border-bottom: 1px solid var(--ink); }
+      /* 联系列表: 标签上移, 值换行 */
+      .contact-list li { flex-direction: column; gap: 6px; }
+      /* 基本信息 2 列, 时间线上移 */
+      .fact-grid { grid-template-columns: repeat(2, 1fr); }
+      .tl-item { flex-direction: column; gap: 6px; }
+      .skill-list li { flex-direction: column; gap: 6px; }
+    }
+    @media (max-width: 480px) {
+      .nav { gap: 18px; }
+      .site-footer { flex-direction: column; gap: 10px; }
+    }
+
+    /* ============ 减弱动效 ============ */
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .hint-arrow { animation: none; }
+      *, *::before, *::after { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶栏 -->
+  <header class="site-header">
+    <a class="logo" href="#top">GANYU</a>
+    <nav class="nav" aria-label="主导航">
+      <a href="#about">关于</a>
+      <a href="#works">作品</a>
+      <a href="#contact">联系</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <!-- ============ 首屏: MiMo 风格画布 ============ -->
+    <section class="hero" aria-label="开场">
+      <div class="hero-frame" aria-hidden="true"></div>
+
+      <!-- 四角标注(固定不随内容旋转, 避免摇摆时被裁切) -->
+      <span class="corner corner-tl" aria-hidden="true">PORTFOLIO — 2026</span>
+      <span class="corner corner-br" aria-hidden="true">3D · MEDIA · INTERACTIVE</span>
+
+      <!-- 基础层: 暖白底黑字(语义内容所在) -->
+      <div class="layer layer-base">
+        <div class="hero-copy">
+          <h1 class="hero-title">你好，我叫甘宇</h1>
+          <p class="hero-sub">甘宇 · 3D 视觉 / 数字媒体创作</p>
+        </div>
+        <p class="hero-hint" aria-hidden="true"><span class="hint-arrow">↓</span> SCROLL</p>
+      </div>
+
+      <!-- 反色层: 黑底白字, 仅蒙版圆内可见 -->
+      <div class="layer layer-invert" aria-hidden="true">
+        <div class="hero-copy">
+          <h1 class="hero-title">I AM GANYU</h1>
+          <p class="hero-sub">甘宇 · 3D 视觉 / 数字媒体创作</p>
+        </div>
+        <p class="hero-hint"><span class="hint-arrow">↓</span> SCROLL</p>
+      </div>
+    </section>
+
+    <!-- ============ 关于 ============ -->
+    <section id="about" class="sec" aria-label="关于">
+      <p class="sec-kicker">ABOUT · 关于</p>
+      <h2>甘宇 GANYU</h2>
+      <p class="sec-lead">
+        视觉传达设计专业在读，擅长品牌视觉系统构建与三维视觉设计。
+        通过多个独立交付项目与一段企业实习，建立起从设计策略到商业落地的完整能力闭环，
+        能独立完成从概念提案、视觉设计到可交互原型落地的全链路交付。
+      </p>
+
+      <!-- 基本信息 -->
+      <dl class="fact-grid">
+        <div><dt>年龄</dt><dd>20 岁</dd></div>
+        <div><dt>院校</dt><dd>陕西理工大学</dd></div>
+        <div><dt>学历</dt><dd>本科 · 视觉传达</dd></div>
+        <div><dt>求职方向</dt><dd>视觉传达设计师 / 三维设计师</dd></div>
+      </dl>
+
+      <!-- 经历时间线 -->
+      <div class="tl">
+        <h3 class="tl-head">经历 · EXPERIENCE</h3>
+        <div class="tl-item">
+          <span class="tl-time">2026.07 — 2026.08</span>
+          <div class="tl-body">
+            <p class="tl-name">陕西理工大学文创公司 · 视觉设计实习生</p>
+            <p class="tl-desc">全职实习两个月，深度参与文创产品从设计提案到成品落地的完整商业流程，协助完成效果图绘制、包装设计与宣传物料输出，参与打样跟进与品控反馈。</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <span class="tl-time">2026.06 — 2026.07</span>
+          <div class="tl-body">
+            <p class="tl-name">汉中福地茶业 · 企业文旅墙绘与展示图案设计</p>
+            <p class="tl-desc">完成厂区文化墙绘方案与展示图案系统，融合茶文化符号与企业品牌基因，全流程交付获甲方「超出预期」书面评价。</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <span class="tl-time">2026.06 — 2026.07</span>
+          <div class="tl-body">
+            <p class="tl-name">中国铁塔汉中分公司 · 品牌文创纪念品全流程设计</p>
+            <p class="tl-desc">提出「连接」设计概念，完成概念草图到打样跟进的完整链路，方案获甲方评审委员会全票通过，首批 200 套已投入使用。</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <span class="tl-time">2026.03 — 2026.06</span>
+          <div class="tl-body">
+            <p class="tl-name">文创电商平台 · 品牌视觉设计与前端实现</p>
+            <p class="tl-desc">以 Apple 极简主义为视觉基调构建 Design Tokens 配色体系与三端响应式布局，双版本已部署上线，独立完成快闪店视觉系统设计。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 技能 -->
+      <div class="tl">
+        <h3 class="tl-head">技能 · SKILLS</h3>
+        <ul class="skill-list">
+          <li><span class="skill-cat">视觉设计</span><span class="skill-val">Figma / 品牌视觉系统 / 配色体系 / 响应式排版 / UI 原型开发</span></li>
+          <li><span class="skill-cat">三维设计</span><span class="skill-val">Blender 全流程（建模 / 材质 / 动画 / 粒子 / Python）/ Three.js WebGL</span></li>
+          <li><span class="skill-cat">设计提效</span><span class="skill-val">AI 创意辅助（文生图 / 视频 / 代码）/ 设计工作流优化</span></li>
+          <li><span class="skill-cat">协作表达</span><span class="skill-val">设计决策文档 / 全流程独立交付（概念 → 设计 → 开发 → 部署）</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ 作品区 ============ -->
+    <section id="works" class="sec" aria-label="作品">
+      <p class="sec-kicker">WORK · 作品</p>
+      <h2>精选作品</h2>
+
+      <!-- 作品卡片: 繁荣昌盛 · 四季山水圆盘点云展陈 -->
+      <article class="work-card">
+        <a class="work-thumb" href="https://2188195028-crypto.github.io/medallion-pointcloud/"
+           target="_blank" rel="noopener" aria-label="打开繁荣昌盛点云展陈项目">
+          <img src="assets/medallion.webp" alt="繁荣昌盛 · 四季山水圆盘点云展陈 — 金色粒子聚成的圆盘器物" />
+          <span class="work-view">查看项目 ↗</span>
+        </a>
+        <div class="work-info">
+          <p class="work-tag">Three.js / WebGL / 粒子系统</p>
+          <h3 class="work-title">
+            <a href="https://2188195028-crypto.github.io/medallion-pointcloud/"
+               target="_blank" rel="noopener">繁荣昌盛 · 点云展陈</a>
+          </h3>
+          <p class="work-desc">
+            九万粒子聚合而成的四季山水圆盘，中心鎏金「繁荣昌盛」四字由金色粒子凝聚成形。
+            拖拽旋转观察细节，滚动令粒子消散又回升，如尘埃归位。
+          </p>
+          <div class="work-meta">
+            <span>2026</span>
+            <span>3D 交互</span>
+            <span>在线体验</span>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <!-- ============ 联系(信息来自简历) ============ -->
+    <section id="contact" class="sec" aria-label="联系">
+      <p class="sec-kicker">CONTACT · 联系</p>
+      <h2>一起做点东西</h2>
+      <p class="sec-lead">
+        视觉传达设计专业在读，求职方向：视觉传达设计师 / 三维设计师。
+        5 个独立交付项目与 1 段企业实习，从设计策略到商业落地。欢迎交流与合作。
+      </p>
+
+      <!-- 联系方式列表 -->
+      <ul class="contact-list">
+        <li>
+          <span class="c-label">电话</span>
+          <a href="tel:15828516835">158 2851 6835</a>
+        </li>
+        <li>
+          <span class="c-label">邮箱</span>
+          <a href="mailto:2188195028@qq.com">2188195028@qq.com</a>
+        </li>
+        <li>
+          <span class="c-label">GitHub</span>
+          <a href="https://github.com/2188195028-crypto" target="_blank" rel="noopener">2188195028-crypto ↗</a>
+        </li>
+        <li>
+          <span class="c-label">所在地</span>
+          <span class="c-static">四川省成都市龙泉驿区</span>
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- ============ 页脚 ============ -->
+  <footer class="site-footer">
+    <span>© 2026 GANYU · 甘宇</span>
+    <a href="https://github.com/2188195028-crypto" target="_blank" rel="noopener">GITHUB ↗</a>
+  </footer>
+
+  <script>
+  /* ============ 首屏交互: 黑圆蒙版跟随光标 ============ */
+  (function () {
+    'use strict';
+    var hero = document.querySelector('.hero');
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* --- 蒙版圆: 缓动跟随光标, 静止 2.5s 归位 --- */
+    var rect = hero.getBoundingClientRect();
+    var r = Math.min(Math.max(rect.height * 0.16, 70), 150);
+    var homeX = rect.width * 0.50;   // 默认位置: 标题正上方, 圆底与标题顶留出空隙
+    var homeY = rect.height * 0.26;
+    var tx = homeX, ty = homeY, cx = homeX, cy = homeY;
+    var lastMove = 0;
+    var IDLE_MS = 2500;
+
+    function setCircle(x, y) {
+      hero.style.setProperty('--cx', x + 'px');
+      hero.style.setProperty('--cy', y + 'px');
+    }
+
+    function onMove(e) {
+      var rc = hero.getBoundingClientRect();
+      tx = e.clientX - rc.left;
+      ty = e.clientY - rc.top;
+      lastMove = performance.now();
+    }
+    hero.addEventListener('pointermove', onMove);
+    hero.addEventListener('pointerdown', onMove);
+    hero.addEventListener('pointerleave', function () { lastMove = 0; }); // 离开 → 归位
+
+    /* ?demo=1: 圆定格在标题上缘(截图/验证反色效果用, 不吞没整行中文) */
+    if (/[?&]demo=1/.test(location.search)) {
+      tx = rect.width * 0.50;
+      ty = rect.height * 0.40;
+      cx = tx; cy = ty;
+    }
+
+    setCircle(cx, cy);
+
+    /* 内容层倾斜与摇摆 */
+    var tiltX = 0, tiltY = 0, tX = 0, tY = 0, tZ = 0;
+    var startT = performance.now();
+
+    function setTilt() {
+      hero.style.setProperty('--tx', tiltX.toFixed(3) + 'deg');
+      hero.style.setProperty('--ty', tiltY.toFixed(3) + 'deg');
+      hero.style.setProperty('--tz', tZ.toFixed(3) + 'deg');
+    }
+
+    function onTilt(e) {
+      var rc = hero.getBoundingClientRect();
+      /* 鼠标偏离中心 → 目标倾角(±8 度内) */
+      tX = ((e.clientY - rc.top) / rc.height - 0.5) * -16;
+      tY = ((e.clientX - rc.left) / rc.width - 0.5) * 16;
+    }
+    hero.addEventListener('pointermove', onTilt);
+    hero.addEventListener('pointerdown', onTilt);
+
+    if (!reduce) {
+      function frame() {
+        var now = performance.now();
+        if (lastMove && now - lastMove > IDLE_MS) {
+          tx = homeX; ty = homeY; // 空闲回归默认位
+          tX = 0; tY = 0;         // 空闲回正倾角
+        }
+        cx += (tx - cx) * 0.12;
+        cy += (ty - cy) * 0.12;
+        if (Math.abs(tx - cx) < 0.5 && Math.abs(ty - cy) < 0.5) { cx = tx; cy = ty; }
+        /* 持续摇摆: 正弦 ±3 度, 周期约 8s */
+        tZ = Math.sin((now - startT) / 8000 * Math.PI * 2) * 3;
+        tiltX += (tX - tiltX) * 0.06;
+        tiltY += (tY - tiltY) * 0.06;
+        setCircle(cx, cy);
+        setTilt();
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    }
+  })();
+  </script>
+</body>
+</html>
