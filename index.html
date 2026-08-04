@@ -329,86 +329,7 @@
       line-height: 1.6;
     }
 
-    /* 经历时间线(细线行) */
-    .tl { margin-top: clamp(40px, 6vh, 64px); }
-    .tl + .tl { margin-top: clamp(44px, 6.5vh, 72px); }
-    .tl-head {
-      font-size: 11px;
-      letter-spacing: .28em;
-      text-transform: uppercase;
-      color: var(--muted);
-      font-weight: 400;
-      margin-bottom: 0;
-    }
-    .tl-item {
-      display: grid;
-      grid-template-columns: clamp(80px, 9vw, 128px) 1fr;
-      gap: clamp(16px, 3vw, 48px);
-      align-items: baseline;
-      padding: clamp(16px, 2.4vh, 24px) 0;
-      border-bottom: 1px solid var(--ink);
-    }
-    .tl-time {
-      flex: none;
-      width: clamp(80px, 9vw, 128px);
-      font-family: var(--font-body);
-      font-size: 12px;
-      letter-spacing: .08em;
-      color: var(--muted);
-      padding-top: 3px;
-    }
-    .tl-name {
-      font-family: var(--font-cn);
-      font-weight: 700;
-      font-size: clamp(14px, 1.2vw, 17px);
-      line-height: 1.6;
-    }
-    .tl-desc {
-      font-family: var(--font-cn);
-      font-size: clamp(12.5px, 1vw, 14.5px);
-      line-height: 1.8;
-      color: var(--muted);
-      margin-top: 4px;
-    }
 
-    /* 技能列表 */
-    .skill-list {
-      list-style: none;
-      margin-top: clamp(36px, 5vh, 56px);
-      border-top: 1px solid var(--ink);
-    }
-    .skill-list li {
-      display: flex;
-      gap: 24px;
-      padding: clamp(14px, 2vh, 20px) 0;
-      border-bottom: 1px solid var(--ink);
-    }
-    .skill-list.skill-compact li { padding: clamp(10px, 1.4vh, 14px) 0; }
-
-    /* 一行式经历(选择器提权: 防 .sec p 覆盖字号) */
-    .tl-item.tl-compact { padding: clamp(10px, 1.4vh, 14px) 0; }
-    .tl-item.tl-compact:first-child { border-top: 1px solid var(--ink); }
-    .tl .tl-line {
-      max-width: none; /* 覆盖 .sec p 的 60ch 行宽限制 */
-      font-family: var(--font-cn);
-      font-size: clamp(13px, 1.05vw, 15px);
-      line-height: 1.7;
-    }
-    .tl .tl-line strong { font-weight: 700; }
-    .tl-sep { margin: 0 10px; color: var(--muted); }
-    .skill-cat {
-      flex: none;
-      width: clamp(72px, 7vw, 100px);
-      font-size: 11px;
-      letter-spacing: .24em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    .skill-val {
-      font-family: var(--font-cn);
-      font-size: clamp(13px, 1.1vw, 16px);
-      line-height: 1.8;
-    }
 
     /* ============ 联系区 ============ */
     .sec-lead {
@@ -479,8 +400,6 @@
       .contact-list li { flex-direction: column; gap: 6px; }
       /* 基本信息 2 列, 时间线上移 */
       .fact-grid { grid-template-columns: repeat(2, 1fr); }
-      .tl-item { grid-template-columns: 1fr; gap: 6px; }
-      .skill-list li { flex-direction: column; gap: 6px; }
     }
     @media (max-width: 480px) {
       .nav { gap: 18px; }
@@ -551,30 +470,6 @@
         <div><dt>学历</dt><dd>本科 · 视觉传达</dd></div>
         <div><dt>求职方向</dt><dd>视觉传达设计师 / 三维设计师</dd></div>
       </dl>
-
-      <!-- 经历(精选两条, 一行式) -->
-      <div class="tl">
-        <h3 class="tl-head">经历 · EXPERIENCE</h3>
-        <div class="tl-item tl-compact">
-          <span class="tl-time">2026.07 — 08</span>
-          <p class="tl-line"><strong>陕西理工大学文创公司 · 视觉设计实习生</strong><span class="tl-sep">—</span>文创产品从提案到落地的全流程参与</p>
-        </div>
-        <div class="tl-item tl-compact">
-          <span class="tl-time">2026.06 — 07</span>
-          <p class="tl-line"><strong>中国铁塔汉中分公司 · 品牌文创纪念品</strong><span class="tl-sep">—</span>方案全票通过，200 套已投入使用</p>
-        </div>
-      </div>
-
-      <!-- 技能(紧凑) -->
-      <div class="tl">
-        <h3 class="tl-head">技能 · SKILLS</h3>
-        <ul class="skill-list skill-compact">
-          <li><span class="skill-cat">视觉设计</span><span class="skill-val">Figma / 品牌视觉系统 / 响应式排版 / UI 原型开发</span></li>
-          <li><span class="skill-cat">三维设计</span><span class="skill-val">Blender 全流程 / Three.js WebGL</span></li>
-          <li><span class="skill-cat">设计提效</span><span class="skill-val">AI 创意辅助 / 设计工作流优化</span></li>
-          <li><span class="skill-cat">协作表达</span><span class="skill-val">设计决策文档 / 全流程独立交付</span></li>
-        </ul>
-      </div>
     </section>
 
     <!-- ============ 作品区 ============ -->
@@ -613,8 +508,7 @@
       <p class="sec-kicker">CONTACT · 联系</p>
       <h2>一起做点东西</h2>
       <p class="sec-lead">
-        视觉传达设计专业在读，求职方向：视觉传达设计师 / 三维设计师。
-        5 个独立交付项目与 1 段企业实习，从设计策略到商业落地。欢迎交流与合作。
+        求职方向：视觉传达设计师 / 三维设计师。欢迎交流与合作，详细经历与技能请见简历。
       </p>
 
       <!-- 联系方式列表 -->
