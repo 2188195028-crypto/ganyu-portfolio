@@ -18,9 +18,9 @@
       --font-display: "Archivo Black", "Noto Sans SC", sans-serif;
       --font-body: "Space Grotesk", "Noto Sans SC", sans-serif;
       --font-cn: "Noto Sans SC", sans-serif;
-      --r: clamp(70px, min(16vh, 20vw), 150px); /* 黑圆蒙版半径(小圆, 不遮挡居中标题) */
-      --cx: 36%;                /* 蒙版初始位置(JS 接管前) */
-      --cy: 44%;
+      --r: clamp(70px, min(16vh, 20vw), 150px); /* 黑圆蒙版半径(全站 spotlight 共用) */
+      --cx: 50vw;               /* 蒙版初始位置(JS 接管前): 视口上部居中 */
+      --cy: 26vh;
     }
 
     /* ============ 基础 ============ */
@@ -106,13 +106,15 @@
     .corner-br { bottom: 26px; right: 26px; }
     .corner-inv { color: rgba(255, 255, 255, .6); }
 
-    /* 双层: 底层暖白黑字 / 反色层黑底白字(clip 出圆形蒙版) */
+    /* 首屏内容层: 暖白底黑字(黑圆蒙版由全局 spotlight 提供) */
     .layer { position: absolute; inset: 0; }
     .layer-base { z-index: 1; }
-    .layer-invert {
-      z-index: 2;
-      background: var(--ink);
-      clip-path: circle(var(--r) at var(--cx) var(--cy));
+
+    /* 首屏 3D 舞台: 内容随鼠标倾斜(±15°) + 持续摇摆(±5°), 主层与镜像层共用 --tx/--ty/--tz 同步偏转 */
+    .hero { perspective: 1200px; }
+    .hero .layer-base {
+      transform: rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg)) rotateZ(var(--tz, 0deg));
+      will-change: transform;
     }
 
     /* 主标题(双层各一份: 基础层中文黑字, 反色层英文白字), 画面居中 */
@@ -141,16 +143,6 @@
         0.045em 0.045em 0 rgba(0, 0, 0, .45),
         0.08em 0.08em 0.08em rgba(0, 0, 0, .14);
     }
-    /* 浮雕字(反色层黑底白字) */
-    .layer-invert .hero-title {
-      color: #f5f5ec;
-      text-shadow:
-        -0.035em -0.035em 0 rgba(0, 0, 0, 1),
-        -0.07em -0.07em 0.06em rgba(0, 0, 0, .6),
-        0.05em 0.05em 0 rgba(255, 255, 255, .4),
-        0.09em 0.09em 0.1em rgba(0, 0, 0, .5);
-    }
-
     /* 副行(标题下方居中) */
     .hero-sub {
       margin-top: clamp(14px, 1.6vw, 26px);
@@ -158,14 +150,6 @@
       font-size: clamp(12px, 1.05vw, 16px);
       letter-spacing: .08em;
       color: var(--muted);
-    }
-    .layer-invert .hero-sub { color: rgba(255, 255, 255, .92); }
-
-    /* 首屏 3D 舞台: 内容随鼠标小幅倾斜 + 持续轻微摇摆 */
-    .hero { perspective: 1200px; }
-    .layer {
-      transform: rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg)) rotateZ(var(--tz, 0deg));
-      will-change: transform;
     }
 
     /* 滚动提示 */
@@ -183,7 +167,6 @@
       color: var(--muted);
       z-index: 4;
     }
-    .layer-invert .hero-hint { color: rgba(255, 255, 255, .65); }
     .hint-arrow { display: inline-block; animation: hintDrop 2.2s ease-in-out infinite; }
     @keyframes hintDrop {
       0%, 100% { transform: translateY(0); }
@@ -385,10 +368,94 @@
     }
     .site-footer a:hover { color: var(--ink); }
 
+    /* ============ 全局黑圆蒙版(spotlight) ============ */
+    /* 整页反色层: 黑底, 圆形 clip-path 跟随光标, 覆盖全站所有区块 */
+    #spotlight {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: var(--ink);
+      clip-path: circle(var(--r) at var(--cx) var(--cy));
+      pointer-events: none;
+      z-index: 10;               /* 低于吸顶导航(z-20), 高于正文内容 */
+      color: #f5f5ec;
+    }
+    /* 反色主文字(标题/数值) */
+    #spotlight h2,
+    #spotlight .work-title,
+    #spotlight .fact-grid dd,
+    #spotlight .c-static {
+      color: #f5f5ec;
+    }
+    /* 反色正文 */
+    #spotlight .sec-lead,
+    #spotlight .work-desc {
+      color: rgba(245, 245, 236, .78);
+    }
+    /* 反色次要文字 */
+    #spotlight .sec-kicker,
+    #spotlight .work-tag,
+    #spotlight .work-meta,
+    #spotlight .fact-grid dt,
+    #spotlight .c-label,
+    #spotlight .site-footer {
+      color: rgba(245, 245, 236, .55);
+    }
+    /* 反色分隔线 */
+    #spotlight .sec,
+    #spotlight .work-card,
+    #spotlight .work-thumb,
+    #spotlight .fact-grid,
+    #spotlight .fact-grid > div,
+    #spotlight .work-meta,
+    #spotlight .contact-list,
+    #spotlight .contact-list li,
+    #spotlight .site-footer {
+      border-color: rgba(245, 245, 236, .28);
+    }
+    /* 查看项目按钮: 反色(白底黑字) */
+    #spotlight .work-view { background: #f5f5ec; color: #0a0a0a; }
+    /* 蒙版修复: 镜像作品卡背景透出黑底(原 .work-card 白底盖住 spotlight 黑底, 白字隐形) */
+    #spotlight .work-card { background: transparent; }
+    /* 镜像首屏: 与主首屏同尺寸同位置, 文字反色(圆内显示英文标题) */
+    .spot-hero {
+      position: relative;
+      height: calc(100vh - 60px);
+      margin-top: 60px;
+      min-height: 560px;
+      perspective: 1200px;        /* 与主首屏同透视, 偏转渲染一致 */
+    }
+    /* 镜像偏转容器: 与主首屏 .layer 同尺寸, 用同一组 --tx/--ty/--tz 同步偏转 */
+    .spot-tilt {
+      position: absolute;
+      inset: 0;
+      transform: rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg)) rotateZ(var(--tz, 0deg));
+      will-change: transform;
+    }
+    .spot-frame {
+      position: absolute;
+      inset: 14px;
+      border: 1px solid rgba(245, 245, 236, .28);
+    }
+    .spot-title {
+      color: #f5f5ec;
+      text-shadow:
+        -0.035em -0.035em 0 rgba(0, 0, 0, 1),
+        -0.07em -0.07em 0.06em rgba(0, 0, 0, .6),
+        0.05em 0.05em 0 rgba(255, 255, 255, .4),
+        0.09em 0.09em 0.1em rgba(0, 0, 0, .5);
+    }
+    .spot-sub { color: rgba(245, 245, 236, .92); }
+    .spot-hint { color: rgba(245, 245, 236, .65); }
+    #spotlight .corner { color: rgba(245, 245, 236, .6); }
+
     /* ============ 响应式 ============ */
     @media (max-width: 768px) {
       .hero { min-height: 480px; }
+      .spot-hero { min-height: 480px; }
       .hero-frame { inset: 8px; }
+      .spot-frame { inset: 8px; }
       .corner-tl { top: 18px; left: 18px; }
       .corner-br { bottom: 18px; right: 18px; }
       .hero-title { left: clamp(20px, 8vw, 60px); }
@@ -443,14 +510,6 @@
         <p class="hero-hint" aria-hidden="true"><span class="hint-arrow">↓</span> SCROLL</p>
       </div>
 
-      <!-- 反色层: 黑底白字, 仅蒙版圆内可见 -->
-      <div class="layer layer-invert" aria-hidden="true">
-        <div class="hero-copy">
-          <h1 class="hero-title">I AM GANYU</h1>
-          <p class="hero-sub">甘宇 · 3D 视觉 / 数字媒体创作</p>
-        </div>
-        <p class="hero-hint"><span class="hint-arrow">↓</span> SCROLL</p>
-      </div>
     </section>
 
     <!-- ============ 关于 ============ -->
@@ -523,7 +582,7 @@
         </li>
         <li>
           <span class="c-label">GitHub</span>
-          <a href="https://github.com/2188195028-crypto" target="_blank" rel="noopener">2188195028-crypto ↗</a>
+          <a href="https://github.com/2188195028-crypto" target="_blank" rel="noopener">GANYU ↗</a>
         </li>
         <li>
           <span class="c-label">所在地</span>
@@ -539,64 +598,154 @@
     <a href="https://github.com/2188195028-crypto" target="_blank" rel="noopener">GITHUB ↗</a>
   </footer>
 
+  <!-- ============ 全局黑圆蒙版(镜像反色层, 仅装饰不参与交互) ============ -->
+  <div id="spotlight" aria-hidden="true">
+    <!-- 镜像首屏: 圆内显示英文标题 -->
+    <div class="spot-hero">
+      <div class="spot-frame"></div>
+      <span class="corner corner-tl">PORTFOLIO — 2026</span>
+      <span class="corner corner-br">3D · MEDIA · INTERACTIVE</span>
+      <div class="spot-tilt">
+        <div class="hero-copy">
+          <h1 class="hero-title spot-title">I AM GANYU</h1>
+          <p class="hero-sub spot-sub">甘宇 · 3D 视觉 / 数字媒体创作</p>
+        </div>
+        <p class="hero-hint spot-hint"><span class="hint-arrow">↓</span> SCROLL</p>
+      </div>
+    </div>
+
+    <!-- 镜像: 关于 -->
+    <section class="sec">
+      <p class="sec-kicker">ABOUT · 关于</p>
+      <h2>甘宇 GANYU</h2>
+      <p class="sec-lead">
+        视觉传达设计专业在读，擅长品牌视觉系统构建与三维视觉设计。
+        通过多个独立交付项目与一段企业实习，建立起从设计策略到商业落地的完整能力闭环，
+        能独立完成从概念提案、视觉设计到可交互原型落地的全链路交付。
+      </p>
+      <dl class="fact-grid">
+        <div><dt>年龄</dt><dd>20 岁</dd></div>
+        <div><dt>院校</dt><dd>陕西理工大学</dd></div>
+        <div><dt>学历</dt><dd>本科 · 视觉传达</dd></div>
+        <div><dt>求职方向</dt><dd>视觉传达设计师 / 三维设计师</dd></div>
+      </dl>
+    </section>
+
+    <!-- 镜像: 作品 -->
+    <section class="sec">
+      <p class="sec-kicker">WORK · 作品</p>
+      <h2>精选作品</h2>
+      <article class="work-card">
+        <span class="work-thumb">
+          <img src="assets/medallion.webp" alt="" />
+          <span class="work-view">查看项目 ↗</span>
+        </span>
+        <div class="work-info">
+          <p class="work-tag">Three.js / WebGL / 粒子系统</p>
+          <h3 class="work-title">繁荣昌盛 · 点云展陈</h3>
+          <p class="work-desc">
+            九万粒子聚合而成的四季山水圆盘，中心鎏金「繁荣昌盛」四字由金色粒子凝聚成形。
+            拖拽旋转观察细节，滚动令粒子消散又回升，如尘埃归位。
+          </p>
+          <div class="work-meta">
+            <span>2026</span>
+            <span>3D 交互</span>
+            <span>在线体验</span>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <!-- 镜像: 联系 -->
+    <section class="sec">
+      <p class="sec-kicker">CONTACT · 联系</p>
+      <h2>一起做点东西</h2>
+      <p class="sec-lead">
+        求职方向：视觉传达设计师 / 三维设计师。欢迎交流与合作，详细经历与技能请见简历。
+      </p>
+      <ul class="contact-list">
+        <li><span class="c-label">电话</span><span class="c-static">158 2851 6835</span></li>
+        <li><span class="c-label">邮箱</span><span class="c-static">2188195028@qq.com</span></li>
+        <li><span class="c-label">GitHub</span><span class="c-static">GANYU ↗</span></li>
+        <li><span class="c-label">所在地</span><span class="c-static">四川省成都市龙泉驿区</span></li>
+      </ul>
+    </section>
+
+    <!-- 镜像: 页脚 -->
+    <footer class="site-footer">
+      <span>© 2026 GANYU · 甘宇</span>
+      <span>GITHUB ↗</span>
+    </footer>
+  </div>
+
   <script>
-  /* ============ 首屏交互: 黑圆蒙版跟随光标 ============ */
+  /* ============ 全局交互: 黑圆蒙版跟随光标(全站复用) ============ */
   (function () {
     'use strict';
-    var hero = document.querySelector('.hero');
+    var spotlight = document.getElementById('spotlight');
     var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var vw = document.documentElement.clientWidth;
+    var vh = document.documentElement.clientHeight;
 
-    /* --- 蒙版圆: 缓动跟随光标, 静止 2.5s 归位 --- */
-    var rect = hero.getBoundingClientRect();
-    var r = Math.min(Math.max(rect.height * 0.16, 70), 150);
-    var homeX = rect.width * 0.50;   // 默认位置: 标题正上方, 圆底与标题顶留出空隙
-    var homeY = rect.height * 0.26;
+    var homeX = vw * 0.50;   // 默认停留位: 视口上部居中(标题上方)
+    var homeY = vh * 0.26;
     var tx = homeX, ty = homeY, cx = homeX, cy = homeY;
     var lastMove = 0;
     var IDLE_MS = 2500;
 
-    function setCircle(x, y) {
-      hero.style.setProperty('--cx', x + 'px');
-      hero.style.setProperty('--cy', y + 'px');
-    }
-
-    function onMove(e) {
-      var rc = hero.getBoundingClientRect();
-      tx = e.clientX - rc.left;
-      ty = e.clientY - rc.top;
-      lastMove = performance.now();
-    }
-    hero.addEventListener('pointermove', onMove);
-    hero.addEventListener('pointerdown', onMove);
-    hero.addEventListener('pointerleave', function () { lastMove = 0; }); // 离开 → 归位
-
-    /* ?demo=1: 圆定格在标题上缘(截图/验证反色效果用, 不吞没整行中文) */
-    if (/[?&]demo=1/.test(location.search)) {
-      tx = rect.width * 0.50;
-      ty = rect.height * 0.40;
-      cx = tx; cy = ty;
-    }
-
-    setCircle(cx, cy);
-
-    /* 内容层倾斜与摇摆 */
+    /* --- 首屏 3D 偏转: 鼠标控制 ±15°(原版 ±8°), 持续摇摆 ±5°(原版 ±3°) --- */
+    /* 变量挂在 body 上, 主首屏 .layer 与镜像 .spot-tilt 同步继承, 蒙版圆保持对齐 */
+    var hero = document.querySelector('.hero');
     var tiltX = 0, tiltY = 0, tX = 0, tY = 0, tZ = 0;
     var startT = performance.now();
 
     function setTilt() {
-      hero.style.setProperty('--tx', tiltX.toFixed(3) + 'deg');
-      hero.style.setProperty('--ty', tiltY.toFixed(3) + 'deg');
-      hero.style.setProperty('--tz', tZ.toFixed(3) + 'deg');
+      document.body.style.setProperty('--tx', tiltX.toFixed(3) + 'deg');
+      document.body.style.setProperty('--ty', tiltY.toFixed(3) + 'deg');
+      document.body.style.setProperty('--tz', tZ.toFixed(3) + 'deg');
     }
-
     function onTilt(e) {
       var rc = hero.getBoundingClientRect();
-      /* 鼠标偏离中心 → 目标倾角(±8 度内) */
-      tX = ((e.clientY - rc.top) / rc.height - 0.5) * -16;
-      tY = ((e.clientX - rc.left) / rc.width - 0.5) * 16;
+      /* 鼠标偏离首屏中心 → 目标倾角(±15 度内) */
+      tX = ((e.clientY - rc.top) / rc.height - 0.5) * -30;
+      tY = ((e.clientX - rc.left) / rc.width - 0.5) * 30;
     }
     hero.addEventListener('pointermove', onTilt);
     hero.addEventListener('pointerdown', onTilt);
+
+    /* 蒙版圆坐标 = 视口坐标 + 滚动偏移(文档坐标, 与页面内容同步滚动) */
+    function setCircle(x, y) {
+      spotlight.style.setProperty('--cx', (x + (window.scrollX || 0)) + 'px');
+      spotlight.style.setProperty('--cy', (y + (window.scrollY || 0)) + 'px');
+    }
+
+    function onMove(e) {
+      tx = e.clientX;
+      ty = e.clientY;
+      lastMove = performance.now();
+    }
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerdown', onMove);
+    document.addEventListener('mouseleave', function () { lastMove = 0; }); // 指针离开窗口 → 归位
+
+    window.addEventListener('resize', function () {
+      vw = document.documentElement.clientWidth;
+      vh = document.documentElement.clientHeight;
+      homeX = vw * 0.50;
+      homeY = vh * 0.26;
+    });
+
+    /* ?demo=1: 圆钉在视口坐标(截图/验证反色效果用, 不吞没整行中文); &x=&y= 可指定视口坐标 */
+    if (/[?&]demo=1/.test(location.search)) {
+      var params = new URLSearchParams(location.search);
+      var fx = parseFloat(params.get('x'));
+      var fy = parseFloat(params.get('y'));
+      tx = isNaN(fx) ? vw * 0.50 : fx;
+      ty = isNaN(fy) ? vh * 0.40 : fy;
+      cx = tx; cy = ty;
+    }
+
+    setCircle(cx, cy);
 
     if (!reduce) {
       function frame() {
@@ -608,8 +757,8 @@
         cx += (tx - cx) * 0.12;
         cy += (ty - cy) * 0.12;
         if (Math.abs(tx - cx) < 0.5 && Math.abs(ty - cy) < 0.5) { cx = tx; cy = ty; }
-        /* 持续摇摆: 正弦 ±3 度, 周期约 8s */
-        tZ = Math.sin((now - startT) / 8000 * Math.PI * 2) * 3;
+        /* 持续摇摆: 正弦 ±5 度, 周期约 8s */
+        tZ = Math.sin((now - startT) / 8000 * Math.PI * 2) * 5;
         tiltX += (tX - tiltX) * 0.06;
         tiltY += (tY - tiltY) * 0.06;
         setCircle(cx, cy);
