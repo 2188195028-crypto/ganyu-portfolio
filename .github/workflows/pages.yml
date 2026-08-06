@@ -1,0 +1,38 @@
+# GitHub Pages 部署(替代不稳定 legacy 构建)
+# 触发: push master → Actions 构建 → 部署 Pages
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+          exclude: |
+            .git/**
+            tools/**
+            **/*.old.webp
+
+      - name: Deploy
+        uses: actions/deploy-pages@v4
