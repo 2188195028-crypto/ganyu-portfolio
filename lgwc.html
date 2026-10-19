@@ -653,6 +653,14 @@
       .site-footer { flex-direction: column; align-items: flex-start; gap: 6px; }
     }
 
+    /* 桌面端: 截图在左, 说明在右, 说明字号加倍(14→28px) */
+    @media (min-width: 981px) {
+      .compare-mobile { grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr); }
+      .mobile-grid { order: -1; }
+      .mobile-head { font-size: 20px; }
+      .mobile-intro { font-size: 28px; line-height: 1.8; }
+    }
+
     /* ============ 减弱动效 ============ */
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
