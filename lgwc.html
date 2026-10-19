@@ -49,7 +49,10 @@
     a { color: inherit; }
     :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
     ::selection { background: var(--brass); color: var(--cream); }
-    #top { scroll-margin-top: 60px; }
+    #top,
+    #compare,
+    #spec,
+    #notes { scroll-margin-top: 60px; }
     .sr-only {
       position: absolute;
       width: 1px; height: 1px;
@@ -451,110 +454,66 @@
       color: var(--muted);
     }
 
-    /* ============ 说明: 滚动文字序列 ============ */
-    /* 参照 Trammell Venture Partners 的 sticky narrative: 视口钉住, 文字步骤随滚动上下移动并明暗渐变 */
+    /* ============ 说明: 静态卡片 ============ */
+    /* 沿用两版并置的边框 + 图注语言: 编号与标题放在纸面框内, 说明文字压在框下 */
     .notes { padding: clamp(64px, 9vw, 120px) 0; }
-    .notes-head { margin-bottom: clamp(28px, 4vw, 44px); }
-    .notes-head h2 {
-      margin-top: 14px;
-      font-family: var(--font-cn);
-      font-size: clamp(30px, 3.8vw, 50px);
-      font-weight: 900;
-      line-height: 1.16;
-    }
+    .notes .section-head { margin-bottom: clamp(32px, 5vw, 56px); }
 
-    .notes-scroll {
-      position: relative;
-      height: 320vh;
-    }
-    .notes-pin {
-      position: sticky;
-      top: 60px;
-      height: calc(100vh - 60px);
-      height: calc(100dvh - 60px);
-      overflow: hidden;
-    }
-    .notes-stage {
-      width: 100%;
-      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 8%, #000 76%, transparent 96%);
-      mask-image: linear-gradient(to bottom, transparent 0%, #000 8%, #000 76%, transparent 96%);
-    }
-    .notes-track {
-      position: relative;
+    .notes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(24px, 4vw, 56px);
+      align-items: start;
+      margin: 0;
+      padding: 0;
       list-style: none;
-      will-change: transform;
     }
-    .note-step {
+    .note-item { margin: 0; }
+
+    /* 编号与标题的纸面框, 对应两版并置里的 .compare-frame */
+    .note-frame {
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      min-height: clamp(190px, 32vh, 340px);
-      max-width: 920px;
-      padding: clamp(12px, 2.6vh, 32px) 0;
-      opacity: .16;
+      justify-content: space-between;
+      gap: clamp(44px, 6vw, 76px);
+      min-height: clamp(200px, 22vw, 280px);
+      padding: clamp(20px, 2.2vw, 28px);
+      border: 1px solid var(--line);
+      background: var(--paper);
     }
-    .note-step .note-no {
-      font-size: 11px;
-      letter-spacing: .18em;
+    .note-no {
+      font-family: var(--font-display);
+      font-size: clamp(44px, 4.6vw, 64px);
+      line-height: .85;
+      letter-spacing: -.02em;
       color: var(--brass);
-    }
-    .note-step h3 {
-      margin-top: clamp(8px, 1.4vh, 16px);
-      font-family: var(--font-cn);
-      font-size: clamp(30px, 4.4vw, 64px);
-      font-weight: 900;
-      line-height: 1.14;
-      letter-spacing: -.01em;
-    }
-    .note-step p {
-      margin-top: clamp(14px, 2.4vh, 26px);
-      max-width: 56ch;
-      font-family: var(--font-cn);
-      font-size: clamp(14px, 1.3vw, 17px);
-      line-height: 1.95;
-      color: var(--muted);
-    }
-    .notes-progress {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      padding-top: 16px;
-      padding-bottom: 18px;
-      background: var(--bg);
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .notes-count {
-      font-size: 10px;
-      letter-spacing: .22em;
-      color: var(--muted);
       font-variant-numeric: tabular-nums;
     }
-    .notes-bar {
-      flex: 1;
-      height: 1px;
-      background: var(--line-soft);
-      overflow: hidden;
-    }
-    .notes-bar i {
-      display: block;
-      height: 100%;
-      background: var(--ink);
-      transform: scaleX(0);
-      transform-origin: left center;
+    .note-frame h3 {
+      font-family: var(--font-cn);
+      font-size: clamp(22px, 2.2vw, 30px);
+      font-weight: 900;
+      line-height: 1.25;
+      letter-spacing: -.01em;
     }
 
-    /* 无 JS 时退回静态列表 */
-    html:not(.js) .notes-scroll { height: auto; }
-    html:not(.js) .notes-pin { position: static; height: auto; overflow: visible; }
-    html:not(.js) .notes-stage {
-      -webkit-mask-image: none;
-      mask-image: none;
+    /* 框下说明, 对应两版并置里的 figcaption */
+    .note-body { padding-top: 18px; }
+    .note-label {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 11px;
+      letter-spacing: .16em;
+      color: var(--muted);
     }
-    html:not(.js) .note-step { opacity: 1; }
-    html:not(.js) .notes-progress { display: none; }
+    .note-desc {
+      margin-top: 9px;
+      max-width: 42ch;
+      font-family: var(--font-cn);
+      font-size: 14px;
+      line-height: 1.8;
+    }
 
     .live {
       display: flex;
@@ -617,6 +576,19 @@
       .spec-inner { grid-template-columns: 1fr; gap: 32px; }
       .spec-head { position: static; }
       .spec-head p { max-width: 52ch; }
+      .notes-grid { grid-template-columns: 1fr; gap: 36px; }
+      .note-frame { min-height: 0; gap: 36px; }
+    }
+
+    /* 平板宽度: 单列卡片改为横排, 避免整行留白 */
+    @media (min-width: 761px) and (max-width: 980px) {
+      .note-frame {
+        flex-direction: row;
+        align-items: baseline;
+        justify-content: flex-start;
+        gap: 28px;
+        padding: 22px 26px;
+      }
     }
 
     @media (max-width: 760px) {
@@ -632,8 +604,8 @@
       .spec-row dt { padding-top: 0; }
       .spec-tag { display: inline; }
       .spec-row dd + dd { margin-top: 4px; }
-      .notes-scroll { height: 280vh; }
-      .note-step { min-height: 34vh; }
+      .note-frame { padding: 22px; }
+      .note-desc { max-width: none; }
       .live .live-note { margin-left: 0; width: 100%; }
       .nav .nav-aux { display: none; }
     }
@@ -651,14 +623,6 @@
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       *, *::before, *::after { animation: none !important; transition: none !important; }
-      .notes-scroll { height: auto; }
-      .notes-pin { position: static; height: auto; overflow: visible; }
-      .notes-stage {
-        -webkit-mask-image: none;
-        mask-image: none;
-      }
-      .note-step { opacity: 1 !important; }
-      .notes-progress { display: none; }
     }
   </style>
   <script>document.documentElement.classList.add("js");</script>
@@ -861,53 +825,66 @@
       </div>
     </section>
 
-    <!-- 说明: 滚动文字序列(仅文字, 无图片动效) -->
+    <!-- 说明: 静态卡片, 沿用两版并置的边框与图注排版 -->
     <section class="notes" id="notes" aria-labelledby="notes-title">
       <div class="pad-x">
-        <header class="notes-head">
-          <p class="kicker">NOTES · 说明</p>
-          <h2 id="notes-title">对照之后，我留下的三条</h2>
+        <header class="section-head">
+          <div>
+            <p class="kicker">NOTES · 说明</p>
+            <h2 id="notes-title">对照之后，我留下的三条</h2>
+          </div>
+          <p>
+            对照做完了，下面三条不谈审美高下，只记下次会直接改掉的地方：
+            图从哪来、信息怎么排、数据怎么连。每一条都对应上面表里的一行差距。
+          </p>
         </header>
-      </div>
 
-      <div class="notes-scroll">
-        <div class="notes-pin">
-          <div class="notes-stage pad-x">
-            <ol class="notes-track">
-              <li class="note-step">
-                <span class="note-no" aria-hidden="true">01</span>
-                <h3>真图比占位符重要</h3>
-                <p>
-                  同一件商品，实拍能传达材质、工艺和尺寸感，emoji 只能表达类别。
-                  官方站全部用实拍图，我的概念稿全用 emoji 占位，气质差了一截。
-                  下一步先把样品拍齐，再谈排版。
-                </p>
-              </li>
-              <li class="note-step">
-                <span class="note-no" aria-hidden="true">02</span>
-                <h3>货架要密，品牌页要松</h3>
-                <p>
-                  官方站桌面端一屏五列，19 件商品铺开，方便比价和挑选；
-                  我的概念稿三列，留白多，更像品牌首页。两种取向没有对错，
-                  但消费者端的首要任务是让人快速找到东西，这点官方站做得更直接。
-                </p>
-              </li>
-              <li class="note-step">
-                <span class="note-no" aria-hidden="true">03</span>
-                <h3>数据要有来源，双端要能互通</h3>
-                <p>
-                  官方站的商品来自后端 API，管理端改完，消费者端就能看到。
-                  我的概念稿把商品写死在页面里，管理端的修改只存本机浏览器，
-                  消费者端不会同步。要做到双端共享，必须接一层后端。
-                </p>
-              </li>
-            </ol>
-          </div>
-          <div class="notes-progress pad-x" aria-hidden="true">
-            <span class="notes-count">01 / 03</span>
-            <span class="notes-bar"><i></i></span>
-          </div>
-        </div>
+        <ol class="notes-grid">
+          <li class="note-item">
+            <div class="note-frame">
+              <span class="note-no" aria-hidden="true">01</span>
+              <h3>真图比占位符重要</h3>
+            </div>
+            <div class="note-body">
+              <p class="note-label"><span class="dot dot--concept" aria-hidden="true"></span>下一步 · 拍齐样品</p>
+              <p class="note-desc">
+                同一件商品，实拍能传达材质、工艺和尺寸感，emoji 只能表达类别。
+                官方站全部用实拍图，我的概念稿全用 emoji 占位，气质差了一截。
+                下一步先把样品拍齐，再谈排版。
+              </p>
+            </div>
+          </li>
+
+          <li class="note-item">
+            <div class="note-frame">
+              <span class="note-no" aria-hidden="true">02</span>
+              <h3>货架要密，品牌页要松</h3>
+            </div>
+            <div class="note-body">
+              <p class="note-label"><span class="dot dot--concept" aria-hidden="true"></span>取舍 · 货架与品牌页</p>
+              <p class="note-desc">
+                官方站桌面端一屏五列，19 件商品铺开，方便比价和挑选；
+                我的概念稿三列，留白多，更像品牌首页。两种取向没有对错，
+                但消费者端的首要任务是让人快速找到东西，这点官方站做得更直接。
+              </p>
+            </div>
+          </li>
+
+          <li class="note-item">
+            <div class="note-frame">
+              <span class="note-no" aria-hidden="true">03</span>
+              <h3>数据要有来源，双端要能互通</h3>
+            </div>
+            <div class="note-body">
+              <p class="note-label"><span class="dot dot--concept" aria-hidden="true"></span>前提 · 接一层后端</p>
+              <p class="note-desc">
+                官方站的商品来自后端 API，管理端改完，消费者端就能看到。
+                我的概念稿把商品写死在页面里，管理端的修改只存本机浏览器，
+                消费者端不会同步。要做到双端共享，必须接一层后端。
+              </p>
+            </div>
+          </li>
+        </ol>
       </div>
 
       <div class="pad-x">
@@ -928,90 +905,6 @@
   </footer>
 
   <script>
-    /* 说明区: 滚动驱动的文字步骤
-       参照 Trammell Venture Partners 的 sticky narrative:
-       视口钉住, 三条文字随滚动上下移动, 当前条清晰, 相邻条变暗.
-       只改变文字层, 页面上没有任何图片参与动画. */
-    (function () {
-      "use strict";
-      var scroller = document.querySelector(".notes-scroll");
-      if (!scroller) return;
-
-      var track = scroller.querySelector(".notes-track");
-      var steps = Array.prototype.slice.call(scroller.querySelectorAll(".note-step"));
-      var countEl = scroller.querySelector(".notes-count");
-      var barEl = scroller.querySelector(".notes-bar i");
-      if (!track || steps.length < 2) return;
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-      var HEADER = 60;
-      var centers = [];
-      var ticking = false;
-
-      function clamp(value, min, max) {
-        return value < min ? min : value > max ? max : value;
-      }
-
-      function measure() {
-        centers = steps.map(function (step) {
-          return step.offsetTop + step.offsetHeight / 2;
-        });
-      }
-
-      function render() {
-        ticking = false;
-        var viewport = window.innerHeight;
-        var pinHeight = viewport - HEADER;
-        var range = scroller.offsetHeight - pinHeight;
-        if (range <= 0 || !centers.length) return;
-
-        var top = scroller.getBoundingClientRect().top;
-        var progress = clamp((HEADER - top) / range, 0, 1);
-        var position = progress * (steps.length - 1);
-        var lower = Math.floor(position);
-        var upper = Math.min(lower + 1, steps.length - 1);
-        var fraction = position - lower;
-        var center = centers[lower] + (centers[upper] - centers[lower]) * fraction;
-
-        track.style.transform =
-          "translate3d(0," + (-center + pinHeight / 2).toFixed(2) + "px,0)";
-
-        steps.forEach(function (step, index) {
-          var distance = Math.abs(index - position);
-          step.style.opacity = String(clamp(1 - distance * 0.62, 0.16, 1));
-        });
-
-        var current = Math.round(position) + 1;
-        if (countEl) {
-          countEl.textContent =
-            String(current).padStart(2, "0") + " / " + String(steps.length).padStart(2, "0");
-        }
-        if (barEl) barEl.style.transform = "scaleX(" + progress.toFixed(4) + ")";
-      }
-
-      function onScroll() {
-        if (ticking) return;
-        ticking = true;
-        requestAnimationFrame(render);
-      }
-
-      function onResize() {
-        measure();
-        onScroll();
-      }
-
-      measure();
-      render();
-      window.addEventListener("scroll", onScroll, { passive: true });
-      window.addEventListener("resize", onResize);
-      if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(function () {
-          measure();
-          render();
-        });
-      }
-    })();
-
     /* 全页文字: 滚动驱动的漂移与显现
        首屏文字随页面滚出向上漂移; 两版并置的标题与说明、
        移动端截图说明随滚动轻微漂移淡入; 规格表逐行淡入.
@@ -1032,6 +925,7 @@
       /* 整块漂移: 标题组与图注组整体移动, 内部排版保持原样 */
       var driftSelector = [
         ".compare .section-head",
+        ".notes .section-head",
         ".compare-grid figcaption",
         ".mobile-grid figcaption"
       ].join(",");
@@ -1042,7 +936,8 @@
         ".compare-mobile .mobile-head",
         ".spec-columns",
         ".spec-row",
-        ".spec-note"
+        ".spec-note",
+        ".notes-grid .note-item"
       ].join(",");
 
       function makeItems(selector) {
