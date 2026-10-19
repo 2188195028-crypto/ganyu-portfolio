@@ -623,8 +623,8 @@
       .compare-grid { grid-template-columns: 1fr; gap: 36px; }
       .compare-desc { max-width: none; }
       .compare-mobile { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 20px; }
-      .mobile-head { font-size: 9px; letter-spacing: .14em; }
-      .mobile-intro { font-size: 13px; line-height: 1.75; }
+      .mobile-head { font-size: 12px; letter-spacing: .14em; }
+      .mobile-intro { font-size: 16px; line-height: 1.85; }
       .mobile-grid figure { flex: 1 1 160px; }
       .spec-columns { display: none; }
       .spec-row {
@@ -642,6 +642,9 @@
     }
 
     @media (max-width: 520px) {
+      /* 手机端: 截图放到左边, 说明放到右边 */
+      .compare-mobile { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); }
+      .mobile-grid { order: -1; }
       .masthead-title { font-size: clamp(48px, 16vw, 76px); }
       .masthead-cycle { font-size: clamp(19px, 5.4vw, 28px); }
       .meta-list > div { grid-template-columns: 76px minmax(0, 1fr); gap: 14px; }
