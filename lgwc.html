@@ -166,6 +166,51 @@
       color: var(--muted);
     }
 
+    /* 首屏文字轮播 — 竖向滑动 + 模糊 + 透明度交叉淡入
+       参考 Medusmo Vertical Text Cycler；灰色短语循环，黑色标题不动 */
+    .masthead-cycle {
+      margin-top: 14px;
+      font-family: var(--font-display);
+      font-size: clamp(21px, 2.9vw, 40px);
+      font-weight: 900;
+      line-height: 1.25;
+      letter-spacing: .03em;
+      color: var(--muted);
+    }
+    .cycle-window {
+      position: relative;
+      display: block;
+      height: 1.25em;
+      overflow: hidden;
+    }
+    .cycle-word {
+      position: absolute;
+      top: 0;
+      left: 0;
+      white-space: nowrap;
+      opacity: 0;
+      transform: translate3d(0, .9em, 0);
+      filter: blur(8px);
+      transition:
+        transform .9s cubic-bezier(.16, 1, .3, 1),
+        opacity .6s ease,
+        filter .9s cubic-bezier(.16, 1, .3, 1);
+    }
+    .cycle-word.is-active {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+      filter: blur(0);
+    }
+    .cycle-word.is-out {
+      opacity: 0;
+      transform: translate3d(0, -.9em, 0);
+      filter: blur(8px);
+      transition:
+        transform .7s cubic-bezier(.5, 0, .75, 0),
+        opacity .5s ease-in,
+        filter .7s cubic-bezier(.5, 0, .75, 0);
+    }
+
     .meta-list {
       display: grid;
       border-top: 1px solid var(--line);
@@ -406,7 +451,8 @@
       color: var(--muted);
     }
 
-    /* ============ 说明 ============ */
+    /* ============ 说明: 滚动文字序列 ============ */
+    /* 参照 Trammell Venture Partners 的 sticky narrative: 视口钉住, 文字步骤随滚动上下移动并明暗渐变 */
     .notes { padding: clamp(64px, 9vw, 120px) 0; }
     .notes-head { margin-bottom: clamp(28px, 4vw, 44px); }
     .notes-head h2 {
@@ -416,34 +462,99 @@
       font-weight: 900;
       line-height: 1.16;
     }
-    .notes-list { list-style: none; border-top: 1px solid var(--line); }
-    .notes-list li {
-      display: grid;
-      grid-template-columns: 72px minmax(0, 1fr);
-      gap: clamp(16px, 3vw, 32px);
-      padding: 26px 0;
-      border-bottom: 1px solid var(--line-soft);
+
+    .notes-scroll {
+      position: relative;
+      height: 320vh;
     }
-    .note-no {
+    .notes-pin {
+      position: sticky;
+      top: 60px;
+      height: calc(100vh - 60px);
+      height: calc(100dvh - 60px);
+      overflow: hidden;
+    }
+    .notes-stage {
+      width: 100%;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 8%, #000 76%, transparent 96%);
+      mask-image: linear-gradient(to bottom, transparent 0%, #000 8%, #000 76%, transparent 96%);
+    }
+    .notes-track {
+      position: relative;
+      list-style: none;
+      will-change: transform;
+    }
+    .note-step {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: clamp(190px, 32vh, 340px);
+      max-width: 920px;
+      padding: clamp(12px, 2.6vh, 32px) 0;
+      opacity: .16;
+    }
+    .note-step .note-no {
       font-size: 11px;
       letter-spacing: .18em;
       color: var(--brass);
-      padding-top: 5px;
     }
-    .notes-list h3 {
+    .note-step h3 {
+      margin-top: clamp(8px, 1.4vh, 16px);
       font-family: var(--font-cn);
-      font-size: clamp(18px, 2vw, 23px);
-      font-weight: 700;
-      line-height: 1.4;
+      font-size: clamp(30px, 4.4vw, 64px);
+      font-weight: 900;
+      line-height: 1.14;
+      letter-spacing: -.01em;
     }
-    .notes-list p {
-      margin-top: 8px;
-      max-width: 62ch;
+    .note-step p {
+      margin-top: clamp(14px, 2.4vh, 26px);
+      max-width: 56ch;
       font-family: var(--font-cn);
-      font-size: 14px;
-      line-height: 1.9;
+      font-size: clamp(14px, 1.3vw, 17px);
+      line-height: 1.95;
       color: var(--muted);
     }
+    .notes-progress {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding-top: 16px;
+      padding-bottom: 18px;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .notes-count {
+      font-size: 10px;
+      letter-spacing: .22em;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .notes-bar {
+      flex: 1;
+      height: 1px;
+      background: var(--line-soft);
+      overflow: hidden;
+    }
+    .notes-bar i {
+      display: block;
+      height: 100%;
+      background: var(--ink);
+      transform: scaleX(0);
+      transform-origin: left center;
+    }
+
+    /* 无 JS 时退回静态列表 */
+    html:not(.js) .notes-scroll { height: auto; }
+    html:not(.js) .notes-pin { position: static; height: auto; overflow: visible; }
+    html:not(.js) .notes-stage {
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+    html:not(.js) .note-step { opacity: 1; }
+    html:not(.js) .notes-progress { display: none; }
 
     .live {
       display: flex;
@@ -521,13 +632,15 @@
       .spec-row dt { padding-top: 0; }
       .spec-tag { display: inline; }
       .spec-row dd + dd { margin-top: 4px; }
-      .notes-list li { grid-template-columns: 44px minmax(0, 1fr); }
+      .notes-scroll { height: 280vh; }
+      .note-step { min-height: 34vh; }
       .live .live-note { margin-left: 0; width: 100%; }
       .nav .nav-aux { display: none; }
     }
 
     @media (max-width: 520px) {
       .masthead-title { font-size: clamp(48px, 16vw, 76px); }
+      .masthead-cycle { font-size: clamp(19px, 5.4vw, 28px); }
       .meta-list > div { grid-template-columns: 76px minmax(0, 1fr); gap: 14px; }
       .mobile-grid { gap: 20px; }
       .mobile-grid figure { flex: 1 1 140px; }
@@ -538,8 +651,17 @@
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       *, *::before, *::after { animation: none !important; transition: none !important; }
+      .notes-scroll { height: auto; }
+      .notes-pin { position: static; height: auto; overflow: visible; }
+      .notes-stage {
+        -webkit-mask-image: none;
+        mask-image: none;
+      }
+      .note-step { opacity: 1 !important; }
+      .notes-progress { display: none; }
     }
   </style>
+  <script>document.documentElement.classList.add("js");</script>
 </head>
 <body>
   <a class="skip-link" href="#top">跳到主要内容</a>
@@ -564,6 +686,14 @@
           <span class="line">理工文创</span>
           <span class="line">小店</span>
         </h1>
+        <p class="masthead-cycle" aria-hidden="true">
+          <span class="cycle-window">
+            <span class="cycle-word is-active">双版本概念稿</span>
+            <span class="cycle-word">消费者端 × 管理端</span>
+            <span class="cycle-word">官方在售版对照</span>
+            <span class="cycle-word">两版并排看差距</span>
+          </span>
+        </p>
         <p class="masthead-lead">
           一版是我做的概念稿：消费者端与管理端两个页面，纯静态、零框架、双击即用。
           另一版是学校官方在用的商店：真实商品、真实下单。两版并排看，差距和取舍都清楚了。
@@ -729,50 +859,56 @@
       </div>
     </section>
 
-    <!-- 说明 -->
+    <!-- 说明: 滚动文字序列(仅文字, 无图片动效) -->
     <section class="notes" id="notes" aria-labelledby="notes-title">
       <div class="pad-x">
         <header class="notes-head">
           <p class="kicker">NOTES · 说明</p>
           <h2 id="notes-title">对照之后，我留下的三条</h2>
         </header>
+      </div>
 
-        <ol class="notes-list">
-          <li>
-            <span class="note-no" aria-hidden="true">01</span>
-            <div>
-              <h3>真图比占位符重要</h3>
-              <p>
-                同一件商品，实拍能传达材质、工艺和尺寸感，emoji 只能表达类别。
-                官方站全部用实拍图，我的概念稿全用 emoji 占位，气质差了一截。
-                下一步先把样品拍齐，再谈排版。
-              </p>
-            </div>
-          </li>
-          <li>
-            <span class="note-no" aria-hidden="true">02</span>
-            <div>
-              <h3>货架要密，品牌页要松</h3>
-              <p>
-                官方站桌面端一屏五列，19 件商品铺开，方便比价和挑选；
-                我的概念稿三列，留白多，更像品牌首页。两种取向没有对错，
-                但消费者端的首要任务是让人快速找到东西，这点官方站做得更直接。
-              </p>
-            </div>
-          </li>
-          <li>
-            <span class="note-no" aria-hidden="true">03</span>
-            <div>
-              <h3>数据要有来源，双端要能互通</h3>
-              <p>
-                官方站的商品来自后端 API，管理端改完，消费者端就能看到。
-                我的概念稿把商品写死在页面里，管理端的修改只存本机浏览器，
-                消费者端不会同步。要做到双端共享，必须接一层后端。
-              </p>
-            </div>
-          </li>
-        </ol>
+      <div class="notes-scroll">
+        <div class="notes-pin">
+          <div class="notes-stage pad-x">
+            <ol class="notes-track">
+              <li class="note-step">
+                <span class="note-no" aria-hidden="true">01</span>
+                <h3>真图比占位符重要</h3>
+                <p>
+                  同一件商品，实拍能传达材质、工艺和尺寸感，emoji 只能表达类别。
+                  官方站全部用实拍图，我的概念稿全用 emoji 占位，气质差了一截。
+                  下一步先把样品拍齐，再谈排版。
+                </p>
+              </li>
+              <li class="note-step">
+                <span class="note-no" aria-hidden="true">02</span>
+                <h3>货架要密，品牌页要松</h3>
+                <p>
+                  官方站桌面端一屏五列，19 件商品铺开，方便比价和挑选；
+                  我的概念稿三列，留白多，更像品牌首页。两种取向没有对错，
+                  但消费者端的首要任务是让人快速找到东西，这点官方站做得更直接。
+                </p>
+              </li>
+              <li class="note-step">
+                <span class="note-no" aria-hidden="true">03</span>
+                <h3>数据要有来源，双端要能互通</h3>
+                <p>
+                  官方站的商品来自后端 API，管理端改完，消费者端就能看到。
+                  我的概念稿把商品写死在页面里，管理端的修改只存本机浏览器，
+                  消费者端不会同步。要做到双端共享，必须接一层后端。
+                </p>
+              </li>
+            </ol>
+          </div>
+          <div class="notes-progress pad-x" aria-hidden="true">
+            <span class="notes-count">01 / 03</span>
+            <span class="notes-bar"><i></i></span>
+          </div>
+        </div>
+      </div>
 
+      <div class="pad-x">
         <div class="live">
           <a href="https://qoiezidubblu.sealosbja.site/" target="_blank" rel="noopener">官方在售 ↗</a>
           <a href="https://2188195028-crypto.github.io/lgwc/" target="_blank" rel="noopener">概念消费者版 ↗</a>
@@ -788,5 +924,302 @@
     <span>© 2026 GANYU · 甘宇</span>
     <a href="https://github.com/2188195028-crypto" target="_blank" rel="noopener">GITHUB ↗</a>
   </footer>
+
+  <script>
+    /* 说明区: 滚动驱动的文字步骤
+       参照 Trammell Venture Partners 的 sticky narrative:
+       视口钉住, 三条文字随滚动上下移动, 当前条清晰, 相邻条变暗.
+       只改变文字层, 页面上没有任何图片参与动画. */
+    (function () {
+      "use strict";
+      var scroller = document.querySelector(".notes-scroll");
+      if (!scroller) return;
+
+      var track = scroller.querySelector(".notes-track");
+      var steps = Array.prototype.slice.call(scroller.querySelectorAll(".note-step"));
+      var countEl = scroller.querySelector(".notes-count");
+      var barEl = scroller.querySelector(".notes-bar i");
+      if (!track || steps.length < 2) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      var HEADER = 60;
+      var centers = [];
+      var ticking = false;
+
+      function clamp(value, min, max) {
+        return value < min ? min : value > max ? max : value;
+      }
+
+      function measure() {
+        centers = steps.map(function (step) {
+          return step.offsetTop + step.offsetHeight / 2;
+        });
+      }
+
+      function render() {
+        ticking = false;
+        var viewport = window.innerHeight;
+        var pinHeight = viewport - HEADER;
+        var range = scroller.offsetHeight - pinHeight;
+        if (range <= 0 || !centers.length) return;
+
+        var top = scroller.getBoundingClientRect().top;
+        var progress = clamp((HEADER - top) / range, 0, 1);
+        var position = progress * (steps.length - 1);
+        var lower = Math.floor(position);
+        var upper = Math.min(lower + 1, steps.length - 1);
+        var fraction = position - lower;
+        var center = centers[lower] + (centers[upper] - centers[lower]) * fraction;
+
+        track.style.transform =
+          "translate3d(0," + (-center + pinHeight / 2).toFixed(2) + "px,0)";
+
+        steps.forEach(function (step, index) {
+          var distance = Math.abs(index - position);
+          step.style.opacity = String(clamp(1 - distance * 0.62, 0.16, 1));
+        });
+
+        var current = Math.round(position) + 1;
+        if (countEl) {
+          countEl.textContent =
+            String(current).padStart(2, "0") + " / " + String(steps.length).padStart(2, "0");
+        }
+        if (barEl) barEl.style.transform = "scaleX(" + progress.toFixed(4) + ")";
+      }
+
+      function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(render);
+      }
+
+      function onResize() {
+        measure();
+        onScroll();
+      }
+
+      measure();
+      render();
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onResize);
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(function () {
+          measure();
+          render();
+        });
+      }
+    })();
+
+    /* 全页文字: 滚动驱动的漂移与显现
+       首屏文字随页面滚出向上漂移; 两版并置的标题与说明、
+       移动端截图说明随滚动轻微漂移淡入; 规格表逐行淡入.
+       漂移只作用于整块文字组, 组内间距不变, 避免文字互相穿插;
+       只作用于文字节点, 所有图片保持静止. */
+    (function () {
+      "use strict";
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      var heroSelector = [
+        ".masthead .kicker",
+        ".masthead-title .line",
+        ".masthead-cycle",
+        ".masthead-lead",
+        ".meta-list > div"
+      ].join(",");
+
+      /* 整块漂移: 标题组与图注组整体移动, 内部排版保持原样 */
+      var driftSelector = [
+        ".compare .section-head",
+        ".compare-grid figcaption",
+        ".mobile-grid figcaption"
+      ].join(",");
+
+      /* 只淡入: 逐行显现, 不产生位移 */
+      var fadeSelector = [
+        ".hero-plate figcaption",
+        ".compare-mobile .mobile-head",
+        ".spec-columns",
+        ".spec-row",
+        ".spec-note"
+      ].join(",");
+
+      function makeItems(selector) {
+        return Array.prototype.slice.call(document.querySelectorAll(selector)).map(function (el) {
+          return { el: el, top: 0, height: 0, drift: 0 };
+        });
+      }
+
+      var hero = makeItems(heroSelector);
+      var drift = makeItems(driftSelector);
+      var fade = makeItems(fadeSelector);
+      var all = hero.concat(drift, fade);
+      if (!all.length) return;
+
+      var titleLines = Array.prototype.slice.call(document.querySelectorAll(".masthead-title .line"));
+      hero.forEach(function (item) {
+        var el = item.el;
+        var lineIndex = titleLines.indexOf(el);
+        if (lineIndex === 0) {
+          item.drift = 78;
+        } else if (lineIndex === 1) {
+          item.drift = 46;
+        } else if (el.matches(".masthead-cycle")) {
+          item.drift = 42;
+        } else if (el.matches(".masthead-lead")) {
+          item.drift = 38;
+        } else if (el.matches(".meta-list > div")) {
+          item.drift = 26;
+        } else {
+          item.drift = 48;
+        }
+      });
+
+      var measured = false;
+      var ticking = false;
+
+      function clamp(value, min, max) {
+        return value < min ? min : value > max ? max : value;
+      }
+
+      function measure() {
+        all.forEach(function (item) {
+          item.el.style.transform = "";
+          item.el.style.opacity = "";
+        });
+        all.forEach(function (item) {
+          var rect = item.el.getBoundingClientRect();
+          item.top = rect.top + window.scrollY;
+          item.height = rect.height;
+        });
+        measured = true;
+      }
+
+      function render() {
+        ticking = false;
+        if (!measured) return;
+        var viewport = window.innerHeight;
+        var y = window.scrollY;
+
+        var exit = clamp(y / (viewport * 0.9), 0, 1);
+        hero.forEach(function (item) {
+          item.el.style.transform =
+            "translate3d(0," + (-exit * item.drift).toFixed(2) + "px,0)";
+          item.el.style.opacity = (1 - exit * 0.35).toFixed(3);
+        });
+
+        var middle = viewport * 0.5;
+        var scale = viewport < 700 ? 0.72 : 1;
+
+        /* 文字中心进入视口上 62.5% 时完全显现, 越低越淡 */
+        function fadeOpacity(distance) {
+          var t = clamp((distance - 0.25) / 0.95, 0, 1);
+          return 1 - t * 0.82;
+        }
+
+        drift.forEach(function (item) {
+          var center = item.top + item.height / 2 - y;
+          var distance = clamp((center - middle) / middle, -1.2, 1.2);
+          var shift;
+          var opacity;
+          if (distance > 0) {
+            opacity = fadeOpacity(distance);
+            shift = Math.min(distance, 1) * 24 * scale;
+          } else {
+            opacity = 1;
+            shift = distance * 12 * scale;
+          }
+          item.el.style.transform =
+            "translate3d(0," + shift.toFixed(2) + "px,0)";
+          item.el.style.opacity = opacity.toFixed(3);
+        });
+
+        fade.forEach(function (item) {
+          var center = item.top + item.height / 2 - y;
+          var distance = clamp((center - middle) / middle, -1.2, 1.2);
+          item.el.style.opacity = (distance > 0 ? fadeOpacity(distance) : 1).toFixed(3);
+        });
+      }
+
+      function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(render);
+      }
+
+      function onResize() {
+        measure();
+        onScroll();
+      }
+
+      measure();
+      render();
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onResize);
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(function () {
+          measure();
+          render();
+        });
+      }
+    })();
+
+    /* 首屏文字轮播: 竖向滑动 + 模糊 + 透明度交叉淡入
+       参考 Medusmo Vertical Text Cycler. 只在首屏可见且页面在前台时轮换,
+       reduced-motion 下保持第一句静止. */
+    (function () {
+      "use strict";
+      var cycler = document.querySelector(".masthead-cycle");
+      if (!cycler) return;
+      var words = Array.prototype.slice.call(cycler.querySelectorAll(".cycle-word"));
+      if (words.length < 2) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      var index = 0;
+      var timer = null;
+      var visible = true;
+
+      function advance() {
+        if (!visible || document.hidden) return;
+        var next = (index + 1) % words.length;
+        words.forEach(function (word, i) {
+          if (i === index) {
+            word.classList.remove("is-active");
+            word.classList.add("is-out");
+          } else if (i === next) {
+            word.classList.remove("is-out");
+            word.classList.add("is-active");
+          } else {
+            word.classList.remove("is-active", "is-out");
+          }
+        });
+        index = next;
+      }
+
+      function start() {
+        if (timer || !visible) return;
+        timer = window.setInterval(advance, 3200);
+      }
+
+      function stop() {
+        if (!timer) return;
+        window.clearInterval(timer);
+        timer = null;
+      }
+
+      if ("IntersectionObserver" in window) {
+        new IntersectionObserver(function (entries) {
+          visible = entries[0].isIntersecting;
+          if (visible) start(); else stop();
+        }, { threshold: 0.2 }).observe(cycler);
+      } else {
+        start();
+      }
+
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden) stop();
+        else if (visible) start();
+      });
+    })();
+  </script>
 </body>
 </html>
