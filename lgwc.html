@@ -349,7 +349,15 @@
       letter-spacing: .22em;
       text-transform: uppercase;
       color: var(--muted);
-      margin-bottom: 18px;
+      margin-bottom: 12px;
+    }
+    .mobile-intro {
+      max-width: 54ch;
+      margin-bottom: 22px;
+      font-family: var(--font-cn);
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--muted);
     }
     .mobile-grid {
       display: flex;
@@ -475,7 +483,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      gap: clamp(44px, 6vw, 76px);
+      gap: clamp(36px, 4.5vw, 60px);
       min-height: clamp(200px, 22vw, 280px);
       padding: clamp(20px, 2.2vw, 28px);
       border: 1px solid var(--line);
@@ -496,6 +504,13 @@
       line-height: 1.25;
       letter-spacing: -.01em;
     }
+    .note-deck {
+      margin-top: 12px;
+      font-family: var(--font-cn);
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--brass-deep);
+    }
 
     /* 框下说明, 对应两版并置里的 figcaption */
     .note-body { padding-top: 18px; }
@@ -513,6 +528,15 @@
       font-family: var(--font-cn);
       font-size: 14px;
       line-height: 1.8;
+    }
+    .notes-outro {
+      max-width: 62ch;
+      margin-top: clamp(40px, 6vw, 64px);
+      padding-top: clamp(20px, 2.4vw, 28px);
+      border-top: 1px solid var(--line-soft);
+      font-family: var(--font-cn);
+      font-size: clamp(15px, 1.25vw, 18px);
+      line-height: 1.95;
     }
 
     .live {
@@ -737,6 +761,10 @@
 
         <div class="compare-mobile">
           <p class="mobile-head">手机端 · 同一天截图</p>
+          <p class="mobile-intro">
+            同一时间、同一宽度截下的两版首屏：官方站先放分类和商品，概念稿先放氛围和品牌。
+            到了手机上，这个先后顺序比桌面端更明显，也直接决定了要不要往下滑。
+          </p>
           <div class="mobile-grid">
             <figure>
               <div class="mobile-frame">
@@ -835,7 +863,8 @@
           </div>
           <p>
             对照做完了，下面三条不谈审美高下，只记下次会直接改掉的地方：
-            图从哪来、信息怎么排、数据怎么连。每一条都对应上面表里的一行差距。
+            图从哪来、信息怎么排、数据怎么连。每一条都对应上面表里的一行差距，
+            也是概念稿下一版先动手的位置。
           </p>
         </header>
 
@@ -843,7 +872,10 @@
           <li class="note-item">
             <div class="note-frame">
               <span class="note-no" aria-hidden="true">01</span>
-              <h3>真图比占位符重要</h3>
+              <div class="note-frame-copy">
+                <h3>真图比占位符重要</h3>
+                <p class="note-deck">先有真图，再谈排版。</p>
+              </div>
             </div>
             <div class="note-body">
               <p class="note-label"><span class="dot dot--concept" aria-hidden="true"></span>下一步 · 拍齐样品</p>
@@ -858,7 +890,10 @@
           <li class="note-item">
             <div class="note-frame">
               <span class="note-no" aria-hidden="true">02</span>
-              <h3>货架要密，品牌页要松</h3>
+              <div class="note-frame-copy">
+                <h3>货架要密，品牌页要松</h3>
+                <p class="note-deck">先让人找到，再让人记住。</p>
+              </div>
             </div>
             <div class="note-body">
               <p class="note-label"><span class="dot dot--concept" aria-hidden="true"></span>取舍 · 货架与品牌页</p>
@@ -873,7 +908,10 @@
           <li class="note-item">
             <div class="note-frame">
               <span class="note-no" aria-hidden="true">03</span>
-              <h3>数据要有来源，双端要能互通</h3>
+              <div class="note-frame-copy">
+                <h3>数据要有来源，双端要能互通</h3>
+                <p class="note-deck">双端共享，先共享数据。</p>
+              </div>
             </div>
             <div class="note-body">
               <p class="note-label"><span class="dot dot--concept" aria-hidden="true"></span>前提 · 接一层后端</p>
@@ -885,6 +923,11 @@
             </div>
           </li>
         </ol>
+
+        <p class="notes-outro">
+          三条合起来是一件事：概念稿把视觉方向试出来了，但要变成能用的商店，
+          还差真实素材、更直接的信息层级和一层后端。下一版只改这三处，不再加新页面。
+        </p>
       </div>
 
       <div class="pad-x">
@@ -934,10 +977,12 @@
       var fadeSelector = [
         ".hero-plate figcaption",
         ".compare-mobile .mobile-head",
+        ".compare-mobile .mobile-intro",
         ".spec-columns",
         ".spec-row",
         ".spec-note",
-        ".notes-grid .note-item"
+        ".notes-grid .note-item",
+        ".notes-outro"
       ].join(",");
 
       function makeItems(selector) {
