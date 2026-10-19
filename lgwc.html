@@ -340,10 +340,15 @@
     .compare-link:focus-visible { color: var(--brass-deep); }
 
     .compare-mobile {
+      display: grid;
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.35fr);
+      gap: clamp(24px, 4vw, 56px);
+      align-items: start;
       margin-top: clamp(40px, 6vw, 72px);
       padding-top: 22px;
       border-top: 1px solid var(--line-soft);
     }
+    .mobile-copy { max-width: 40ch; }
     .mobile-head {
       font-size: 10px;
       letter-spacing: .22em;
@@ -352,8 +357,6 @@
       margin-bottom: 12px;
     }
     .mobile-intro {
-      max-width: 54ch;
-      margin-bottom: 22px;
       font-family: var(--font-cn);
       font-size: 14px;
       line-height: 1.8;
@@ -600,6 +603,7 @@
       .spec-inner { grid-template-columns: 1fr; gap: 32px; }
       .spec-head { position: static; }
       .spec-head p { max-width: 52ch; }
+      .mobile-grid figure { flex: 1 1 160px; }
       .notes-grid { grid-template-columns: 1fr; gap: 36px; }
       .note-frame { min-height: 0; gap: 36px; }
     }
@@ -618,6 +622,9 @@
     @media (max-width: 760px) {
       .compare-grid { grid-template-columns: 1fr; gap: 36px; }
       .compare-desc { max-width: none; }
+      .compare-mobile { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 20px; }
+      .mobile-head { font-size: 9px; letter-spacing: .14em; }
+      .mobile-intro { font-size: 13px; line-height: 1.75; }
       .mobile-grid figure { flex: 1 1 160px; }
       .spec-columns { display: none; }
       .spec-row {
@@ -760,11 +767,13 @@
         </div>
 
         <div class="compare-mobile">
-          <p class="mobile-head">手机端 · 同一天截图</p>
-          <p class="mobile-intro">
-            同一时间、同一宽度截下的两版首屏：官方站先放分类和商品，概念稿先放氛围和品牌。
-            到了手机上，这个先后顺序比桌面端更明显，也直接决定了要不要往下滑。
-          </p>
+          <div class="mobile-copy">
+            <p class="mobile-head">手机端 · 同一天截图</p>
+            <p class="mobile-intro">
+              同一时间、同一宽度截下的两版首屏：官方站先放分类和商品，概念稿先放氛围和品牌。
+              到了手机上，这个先后顺序比桌面端更明显，也直接决定了要不要往下滑。
+            </p>
+          </div>
           <div class="mobile-grid">
             <figure>
               <div class="mobile-frame">
